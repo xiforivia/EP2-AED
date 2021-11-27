@@ -69,7 +69,6 @@ bool consultarPreferencial(PFILA f, int id){
 }
 
 
-
 bool inserirPessoaNaFila(PFILA f, int id, bool ehPreferencial)
 {
 	if(id < 0 || buscarID(f, id) != NULL)
@@ -97,8 +96,6 @@ bool inserirPessoaNaFila(PFILA f, int id, bool ehPreferencial)
 			PONT atual = f->cabeca->ant;
 			while (atual != f->cabeca)
 			{
-				// if(atual->id == novo->id)
-				// 	break;
 				if(atual->ehPreferencial == true) //pega o ultimo preferencial
 				{
 					novo->prox = atual->prox;
@@ -121,44 +118,81 @@ bool inserirPessoaNaFila(PFILA f, int id, bool ehPreferencial)
 			novo->ant = f->cabeca->ant;
 			f->cabeca->ant = novo;
 			novo->ant->prox = novo;
+
+			PONT atual = f->cabeca->prox;
+			bool inicio = true;
+			while (atual != novo) //vai até um antes do elemento novo
+			{
+				if(atual->ehPreferencial == false) //se existir qualquer um não preferencial além do novo
+					inicio = false;
+				
+				atual = atual->prox;
+			}
+			if(inicio == true) //se o novo é o primeiro não preferencial
+				f->inicioNaoPref = novo;
 		}
 	}
+	return true;
+}
+
+bool atenderPrimeiraDaFila(PFILA f, int* id)
+{
+	if(f->cabeca->prox == f->cabeca && f->cabeca->ant == f->cabeca) //se não tem ninguém na fila
+		return false;
+
+	*id = f->cabeca->prox->id;
+
+	PONT atender;
+	atender = buscarID(f, f->cabeca->prox->id);
+
+	if(atender->ehPreferencial == false) //se a pessoa atendida não for preferencial
+		f->inicioNaoPref = atender->prox; //o primeiro não preferencial passa a ser o próximo
+	
+	f->cabeca->prox = atender->prox; //o segundo passa a ser o primeiro
+	atender->prox->ant = f->cabeca; //ele passa a ser o nó cabeça
+	free(atender);
+
+	return true;	
+}
+
+bool desistirDaFila(PFILA f, int id)
+{
+	PONT remover;
+	remover = buscarID(f, id);
+
+	if(remover == NULL) //se a pessoa não está na fila
+	return false;
+	
+	if(f->inicioNaoPref->id == id)
+		f->inicioNaoPref = remover->prox;
+
+	remover->ant->prox = remover->prox; //o anterior vai ter como proximo quem era o proximo do desistente
+	remover->prox->ant = remover->ant; //o proximo vai ter como anterior quem era o anterior do disistente
+	
+	free(remover);
 
 	return true;
 }
 
-bool atenderPrimeiraDaFila(PFILA f, int* id){
+// int main() {
+// 	PFILA f = criarFila();
+// 	int id;
+// 	bool ehPreferencial;
+// 	bool res;
 
-	/* COMPLETE */
+// 	exibirLog(f);
+// 	res = inserirPessoaNaFila(f, 7, true);
+// 	if(res) printf("Insercao retornou true (14). [OK]\n");
+// 	else printf("Insercao retornou false (14).\n");
+// 	exibirLog(f);
+// 	res = inserirPessoaNaFila(f, 8, false);
+// 	if(res) printf("Insercao retornou true (15). [OK]\n");
+// 	else printf("Insercao retornou false (15).\n");
+// 	exibirLog(f);
+// 	res = inserirPessoaNaFila(f, 9, true);
+// 	if(res) printf("Insercao retornou true (16). [OK]\n");
+// 	else printf("Insercao retornou false (16).\n");
+// 	exibirLog(f);
 
-
-	return false;
-}
-
-
-bool desistirDaFila(PFILA f, int id){
-
-	/* COMPLETE */
-
-
-	return false;
-}
-/*
-int main() {
-	PFILA f = criarFila();
-	int id;
-	bool ehPreferencial;
-	bool res;
-
-	res = inserirPessoaNaFila(f, 1, false);
-	if(res) printf("Insercao retornou true (0). [OK]\n");
-	else printf("Insercao retornou false (0).\n");
-	res = inserirPessoaNaFila(f, 2, false);
-	if(res) printf("Insercao retornou true (0).\n");
-	else printf("Insercao retornou false (0). [OK]\n");
-	res = inserirPessoaNaFila(f, 0, true);
-	exibirLog(f);
-
-	return 0;
-}
-*/
+// 	return 0;
+// }
